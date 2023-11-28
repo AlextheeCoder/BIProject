@@ -1,0 +1,118 @@
+Business Intelligence Project
+================
+Alex Mwai Muthee
+27/11/2023
+
+- [Student Details](#student-details)
+- [Setup Chunk](#setup-chunk)
+- [Understanding the Dataset (Exploratory Data Analysis
+  (EDA))](#understanding-the-dataset-exploratory-data-analysis-eda)
+  - [Loading the Dataset](#loading-the-dataset)
+    - [Source:](#source)
+    - [Reference:](#reference)
+
+# Student Details
+
+|                                              |                  |
+|----------------------------------------------|------------------|
+| **Student ID Number**                        | 131123           |
+| **Student Name**                             | Alex Mwai Muthee |
+| **BBIT 4.2 Group**                           | B                |
+| **BI Project Group Name/ID (if applicable)** | …                |
+
+# Setup Chunk
+
+**Note:** the following KnitR options have been set as the global
+defaults: <BR>
+`knitr::opts_chunk$set(echo = TRUE, warning = FALSE, eval = TRUE, collapse = FALSE, tidy = TRUE)`.
+
+More KnitR options are documented here
+<https://bookdown.org/yihui/rmarkdown-cookbook/chunk-options.html> and
+here <https://yihui.org/knitr/options/>.
+
+# Understanding the Dataset (Exploratory Data Analysis (EDA))
+
+## Loading the Dataset
+
+startup = read.csv(“data/startupdata.csv”)
+
+### Source:
+
+The dataset that was used can be downloaded here:
+<https://www.kaggle.com/datasets/manishkc06/startup-success-prediction>
+
+### Reference:
+
+\*\<Cite the dataset here using APA\>  
+KC, M. (2018). Startup Success Prediction \[Data set\]. Kaggle.
+Retrieved from
+<https://www.kaggle.com/datasets/manishkc06/startup-success-prediction>
+
+``` r
+#Required libraries
+library(plumber)
+library(caret)
+```
+
+    ## Loading required package: ggplot2
+
+    ## Loading required package: lattice
+
+``` r
+# Load the model
+# I chose the desicion tree because it is the most accurate
+tree_model <- readRDS("../models/tree_model.rds")
+
+
+category_code_levels <- c("advertising", "analytics", "automotive", "biotech", "cleantech", "consulting",
+                          "ecommerce", "education", "enterprise", "fashion", "finance", "games_video",
+                          "hardware", "health", "hospitality", "manufacturing", "medical", "messaging",
+                          "mobile", "music", "network_hosting", "news", "other", "photo_video",
+                          "public_relations", "real_estate", "search", "security", "semiconductor",
+                          "social", "software", "sports", "transportation", "travel", "web")
+
+state_levels <- c("California", "Massachusetts", "New York", "Other states", "Texas", "Unknow")
+
+industry_levels <- c("Advertising", "Biotech", "Consulting", "Ecommerce", "Enterprise", "Mobile",
+                     "Other Category", "Software", "Video Games", "Web")
+
+#* @apiTitle Startup Prediction Model API
+#* @apiDescription Predict startup success
+
+#* @param funding_total_usd Total funding in USD
+#* @param funding_rounds Number of funding rounds
+#* @param milestones Number of milestones
+#* @param category_code Category code of the startup
+#* @param state State where the startup is located
+#* @param industry Industry of the startup
+#* @get /predict_startup
+function(funding_total_usd, funding_rounds, milestones, category_code, state, industry) {
+  to_be_predicted <- data.frame(
+    funding_total_usd = as.numeric(funding_total_usd),
+    funding_rounds = as.numeric(funding_rounds),
+    milestones = as.numeric(milestones),
+    category_code = factor(category_code, levels = category_code_levels ),
+    state = factor(state, levels = state_levels ),
+    industry = factor(industry, levels = industry_levels)
+  )
+  
+
+  predictions_tree <- predict(tree_model, to_be_predicted, type = "class")
+  return(predictions_tree)
+}
+```
+
+    ## function(funding_total_usd, funding_rounds, milestones, category_code, state, industry) {
+    ##   to_be_predicted <- data.frame(
+    ##     funding_total_usd = as.numeric(funding_total_usd),
+    ##     funding_rounds = as.numeric(funding_rounds),
+    ##     milestones = as.numeric(milestones),
+    ##     category_code = factor(category_code, levels = category_code_levels ),
+    ##     state = factor(state, levels = state_levels ),
+    ##     industry = factor(industry, levels = industry_levels)
+    ##   )
+    ##   
+    ## 
+    ##   predictions_tree <- predict(tree_model, to_be_predicted, type = "class")
+    ##   return(predictions_tree)
+    ## }

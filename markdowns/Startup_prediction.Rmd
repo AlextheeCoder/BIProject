@@ -1,7 +1,58 @@
-# Name: Alex Mwai Muthee
-#Admission NUmber: 131123
-#Group: B
+---
+title: "Business Intelligence Project"
+author: "Alex Mwai Muthee"
+date: "27/11/2023"
+output:
+  github_document: 
+    toc: yes
+    toc_depth: 4
+    fig_width: 6
+    fig_height: 4
+    df_print: default
+editor_options:
+  chunk_output_type: console
+---
 
+# Student Details
+
+|                                              |     |
+|----------------------------------------------|-----|
+| **Student ID Number**                        | 131123 |
+| **Student Name**                             | Alex Mwai Muthee |
+| **BBIT 4.2 Group**                           | B |
+| **BI Project Group Name/ID (if applicable)** | ... |
+
+# Setup Chunk
+
+**Note:** the following KnitR options have been set as the global defaults: <BR> `knitr::opts_chunk$set(echo = TRUE, warning = FALSE, eval = TRUE, collapse = FALSE, tidy = TRUE)`.
+
+More KnitR options are documented here <https://bookdown.org/yihui/rmarkdown-cookbook/chunk-options.html> and here <https://yihui.org/knitr/options/>.
+
+```{r setup, include=FALSE}
+library(formatR)
+knitr::opts_chunk$set(
+  warning = FALSE,
+  collapse = FALSE
+)
+```
+
+# Understanding the Dataset (Exploratory Data Analysis (EDA))
+
+## Loading the Dataset
+startup = read.csv("data/startupdata.csv")
+
+### Source:
+
+The dataset that was used can be downloaded here: https://www.kaggle.com/datasets/manishkc06/startup-success-prediction
+
+### Reference:
+
+*\<Cite the dataset here using APA\>\
+KC, M. (2018). Startup Success Prediction [Data set]. Kaggle. Retrieved from https://www.kaggle.com/datasets/manishkc06/startup-success-prediction
+
+```{r Dataset Loader}
+library(readr)
+##Other required libraries
 library(data.table)
 library(ggplot2)
 library(ggridges)
@@ -20,8 +71,11 @@ library(plumber)
 library(randomForest)
 library(ggcorrplot)
 
+# Provide the executable R code inside the various code chunks as guided by the lab work.
+startup = read.csv("../data/startupdata.csv")
 
-startup = read.csv("data/startupdata.csv")
+##View the data
+
 View(startup)
 names(startup)
 head(startup)
@@ -29,65 +83,51 @@ class(startup)
 summary(startup)
 str(startup)
 
-
 table(startup$state_code)
 table(startup$category_code)
 table(startup$status)
 table(startup$state_code, startup$status)
 
-
-# Mean
+## Descriptive statistics
+### Mean
 mean(startup$funding_total_usd, na.rm = TRUE)
 
-# Median
+### Median
 median(startup$funding_total_usd, na.rm = TRUE)
 
 
-# Range
+### Range
 range(startup$funding_total_usd, na.rm = TRUE)
 
-# Quartiles
+### Quartiles
 quantile(startup$funding_total_usd, na.rm = TRUE)
 
-# Variance
+### Variance
 var(startup$funding_total_usd, na.rm = TRUE)
 
-# Standard Deviation
+### Standard Deviation
 sd(startup$funding_total_usd, na.rm = TRUE)
 
 
-# Correlation
+### Correlation
 cor(startup$age_first_funding_year, startup$funding_total_usd, use = "complete.obs")
 
-#Annova
-anova_model <- aov(funding_total_usd ~ state_code, data = startup)
-summary(anova_model)
-TukeyHSD(anova_model)
 
-
-
-
-
-
-#Issue 3 Data Exploration & Visualization-----------------
-
-#str 
-str(startup)
-
-#Scatter plot of latitude and longitude
+# Issue 3 Data Exploration & Visualization-----------------
+### Scatter plot of latitude and longitude
 ggplot(startup, aes(x = longitude, y = latitude)) +
   geom_point() +
   labs(x = "Longitude", y = "Latitude") +
   theme_bw()
 
-#Trend in funding rounds
+### Trend in funding rounds
 ggplot(startup, aes(x = funding_rounds)) +
   geom_histogram(fill = "skyblue", color = "white", binwidth = 1) +
   ggtitle("Distribution of Funding Rounds") +
   xlab("Number of Funding Rounds") +
   ylab("Count")
 
-#Regional trends in startup funding 
+###Regional trends in startup funding 
 startup %>% 
   group_by(state_code) %>% 
   summarize(avg_funding = mean(funding_total_usd))%>% 
@@ -97,13 +137,14 @@ startup %>%
   xlab("State") +
   ylab("Average Funding (in USD)")
 
-#Bar plot of category code
+
+###Bar plot of category code
 ggplot(startup, aes(y = category_code)) +
   geom_bar() +
   labs(y = "Category Code", x = "Count") +
   theme_bw()
 
-#Box plot of funding total by category
+###Box plot of funding total by category
 ggplot(startup, aes(y = category_code, x = funding_total_usd/1000000)) +
   geom_boxplot() +
   labs(y = "Category Code", x = "Funding Total (Millions of USD)") +
@@ -111,14 +152,14 @@ ggplot(startup, aes(y = category_code, x = funding_total_usd/1000000)) +
   scale_x_continuous(limits = c(0, 300))
 
 
-#Bar plot of status by category
+###Bar plot of status by category
 ggplot(startup, aes(y = category_code, fill = status)) +
   geom_bar() +
   labs(y = "Category Code", x = "Count") +
   theme_bw() +
   scale_fill_manual(values = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"))
 
-#Regional trends in startup funding
+###Regional trends in startup funding
 startup %>%
   group_by(status) %>%
   summarize(avg_funding = mean(funding_total_usd)) %>%
@@ -128,38 +169,26 @@ startup %>%
   xlab("Status") +
   ylab("Average Funding (in USD)")
 
-
-#Bar chart of count of companies by state:
+###Bar chart of count of companies by state:
 startup_state <- startup %>%
   group_by(state_code) %>%
   summarise(count = n()) %>%
   arrange(desc(count))
-
 ggplot(startup_state, aes(y = state_code, x = count, fill = state_code)) +
   geom_col() +
   labs(y = "State Code", x = "Count of Companies") +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
-
-
-# select relevant numeric variables
+### select relevant numeric variables
 startup_data_num <- select_if(startup, is.numeric)
-# compute correlation matrix
+### compute correlation matrix
 corr_matrix <- cor(startup_data_num, use = "pairwise.complete.obs")
 
-
-
-
-# plot correlation heat map
+### plot correlation heat map
 ggcorrplot(corr_matrix, hc.order = TRUE, type = "lower", 
            lab_size = 3, ggtheme = ggplot2::theme_gray, 
            colors = c("#6D9EC1", "white", "#E46726"))
-
-
-
-
-
 
 # ----------------------------------Issue 4 & 5--------------------------------------------------------
 
@@ -235,7 +264,6 @@ df_pie <- df_pie %>%
   mutate(Percentage = round(100 * Count / sum(Count), 1))
 
 
-
 ## Diagram creation to visualize the distribution of startups across different states
 pie_chart <- ggplot(data = df_pie, aes(x = "", y = Count, fill = State)) +
   geom_bar(width = 1, stat = "identity") +
@@ -299,7 +327,6 @@ bar_chart <- ggplot(data = df_bar, aes(x = Status, y = Count, fill = Status)) +
   theme(plot.title = element_text(hjust = 0.5))  
 
 print(bar_chart)
-
 
 ## scatter plot that visually explores the relationship between the number of funding rounds and the total funding received (in USD) by startups
 scatter_plot_log <- ggplot(startup, aes(x = funding_rounds, y = log(funding_total_usd))) +
@@ -381,10 +408,9 @@ cat("Optimal number of clusters:", optimal_clusters, "\n")
 plot(num_clusters, sil_widths, type = "b", pch = 19, xlab = "Number of Clusters", ylab = "Average Silhouette Width", main = "Silhouette Scores for Different Numbers of Clusters")
 
 
-
 ## Imputing for missing data (closedt_at)
 ### This is to solve some of the errors I was facing during the training.
-startup$closed_at <- as.Date(startup$closed_at) 
+startup$closed_at <- as.Date(startup$closed_at)
 median_date <- median(startup$closed_at, na.rm = TRUE)
 startup$closed_at[is.na(startup$closed_at)] <- median_date
 
@@ -403,14 +429,15 @@ startup_missing_2 <- as.data.frame(missing_count_2); startup_missing_2
 rm(startup_missing, startup_missing_2, missing_count, missing_count_2)
 
 
+
+
 # ------------------------------Training and Modelling--------------------------------------------------------------
 
-
-# Defining  the features and the target variable
+## Defining  the features and the target variable
 features <- c("funding_total_usd", "funding_rounds", "milestones", "category_code", "state", "industry", "status")
 dataset <- startup[, features]
 
-# Convert categorical variables to factors
+## Convert categorical variables to factors
 for (col in c("category_code", "state", "industry", "status")) {
   dataset[, col] <- as.factor(dataset[, col])
 }
@@ -434,19 +461,18 @@ print(paste("Accuracy of Decision Tree model:", accuracy_tree))
 
 
 
-#-----------------------------------------------Clustering(unsupervised)----------------------------------------------------
-# Select features for clustering
+#-----------------------------------------------Clustering(unsupervised)--------------------------------------------
+## Select features for clustering
 df_cluster <- startup
 
 cluster_features <- scale(df_cluster[, c("funding_total_usd", "milestones", "funding_rounds")])
-
 
 set.seed(7)
 wss <- sapply(1:10, function(k){kmeans(cluster_features, k, nstart = 20)$tot.withinss})
 plot(1:10, wss, type = "b", xlab = "Number of Clusters", ylab = "Total Within Sum of Squares")
 
 
-optimal_k <- 3 # for example
+optimal_k <- 3 
 kmeans_result <- kmeans(cluster_features, optimal_k, nstart = 20)
 df_cluster$cluster <- kmeans_result$cluster
 
@@ -470,12 +496,11 @@ print(paste("Accuracy of K-Means Clustering:", accuracy_kmeans))
 
 
 df_rf <- startup
-
-
+## Define features
 features <- c("funding_total_usd", "funding_rounds", "milestones", "category_code", "state", "industry")
 dataset2 <- df_rf[, c(features, "status")]
 
-
+## Convert categorical variables to factors
 for (col in c("category_code", "state", "industry", "status")) {
   dataset2[, col] <- as.factor(dataset2[, col])
 }
@@ -502,10 +527,10 @@ print(paste("Accuracy of Random Forest model:", accuracy_rf))
 predictions_tree <- predict(tree_model, newdata = test_data, type = "class")
 predictions_rf <- predict(rf_model, newdata = test_data)
 
-# Combine the predictions (Majority Voting)
+## Combine the predictions (Majority Voting)
 combined_predictions <- data.frame(predictions_tree, predictions_rf)
 
-# Determine the final predictions based on majority voting
+## Determine the final predictions based on majority voting
 final_predictions <- apply(combined_predictions, 1, function(x) {
   names(which.max(table(x)))
 })
@@ -513,35 +538,6 @@ confusion_matrix_ensemble <- table(Predicted = final_predictions, Actual = test_
 accuracy_ensemble <- sum(diag(confusion_matrix_ensemble)) / sum(confusion_matrix_ensemble)
 print(paste("Accuracy of Ensemble model:", accuracy_ensemble))
 
-# ----------------------------------------Saving & testing the models-------------------------------------------------------------------
+## The decision trees model is still the most accurate, so i think that is the best for predictions
 
-saveRDS(tree_model, "models/tree_model.rds")
-saveRDS(rf_model, "models/rf_model.rds")
-new_data <- startup
-tree_model <- readRDS("models/tree_model.rds")
-rf_model <- readRDS("models/rf_model.rds")
-features <- c("funding_total_usd", "funding_rounds", "milestones", "category_code", "state", "industry", "status")
-dataset2 <- new_data[, c(features, "status")]
-for (col in c("category_code", "state", "industry", "status")) {
-  dataset2[, col] <- as.factor(dataset2[, col])
-}
-
-
-predictions_tree <- predict(tree_model, dataset2, type = "class")
-predictions_rf <- predict(rf_model, dataset2)
-combined_predictions <- data.frame(predictions_tree, predictions_rf)
-final_predictions <- apply(combined_predictions, 1, function(x) {
-  names(which.max(table(x)))
-})
-print(final_predictions)
-
-
-category_code_levels <- levels(train_data$category_code)
-state_levels <- levels(train_data$state)
-industry_levels <- levels(train_data$industry)
-
-print(category_code_levels)
-print(state_levels)
-print(industry_levels)
-class(rf_model)
-
+```
